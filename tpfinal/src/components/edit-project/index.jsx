@@ -1,43 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./index.scss";
-import { getProjectById, updateProject } from "@/utils/projectManager";
+import { useState } from "react";
+import { patchProject } from "@/utils/projectManager";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 
-function EditProject({ projectId, onClose, onUpdate }) {
-  const [projectData, setProjectData] = useState({
-    name: "",
-    description: "",
-    icon: "",
-    dueDate: dayjs(Date.now()),
-  });
+function EditProject({ project, onClose }) {
+  const [name, setName] = useState(name);
+  const [description, setDescription] = useState(description);
+  const [icon, setIcon] = useState(icon);
+  const [dueDate, setDueDate] = useState(dayjs(dueDate));
 
-  useEffect(() => {
-    (async () => {
-      const project = await getProjectById(projectId);
-      setProjectData({
-        ...projectData,
-        ...project,
-        dueDate: dayjs(project.dueDate),
-      });
-    })();
-  }, []);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setProjectData({ ...projectData, [name]: value });
-  };
-
-  const handleUpdate = async (event) => {
+  const handleUpdate = (event) => {
     event.preventDefault();
-    await updateProject(projectId, {
-      name: projectData.name,
-      description: projectData.description,
-      icon: projectData.icon,
-      dueDate: projectData.dueDate.valueOf(),
-    });
-    onUpdate(projectData);
+
+    // Update existing project with modified data
+    patchProject(project.id, name, description, icon, dueDate);
+
+    // Close the edit modal
     onClose();
   };
 
@@ -48,24 +29,23 @@ function EditProject({ projectId, onClose, onUpdate }) {
           <input
             className="text-field name"
             type="text"
-            value={projectData.name}
-            onChange={handleChange}
             placeholder="Nombre del proyecto"
-          />
+            onChange={(event) => {
+              setName(event.target.value);
+            }}
+          ></input>
           <textarea
             rows={10}
             className="text-field desc"
             type="text"
-            value={projectData.description}
-            onChange={handleChange}
             placeholder="Descripcion del proyecto"
-          />
+            onChange={(event) => {
+              setDescription(event.target.value);
+            }}
+          ></textarea>
           <div className="date-picker-container">
             <p>fecha de finalizacion:</p>
-            <DatePicker
-              value={projectData.dueDate}
-              onChange={(date) => setProjectData({ ...projectData, dueDate: date })}
-            />
+            <DatePicker value={dueDate} onChange={(date) => setDueDate(date)}/>
           </div>
           <div className="icon-selector">
             <p>selecciona un icono!</p>
@@ -106,7 +86,7 @@ function EditProject({ projectId, onClose, onUpdate }) {
             </button>
           </div>
           <div className="modal-buttons">
-            <button className="create-project-submit" onClick={handleUpdate}>
+            <button className="edit-project-save" onClick={handleUpdate}>
               Update
             </button>
             <button className="close-modal" onClick={onClose}>
@@ -120,4 +100,7 @@ function EditProject({ projectId, onClose, onUpdate }) {
 }
 
 export default EditProject;
+
+
+
 
